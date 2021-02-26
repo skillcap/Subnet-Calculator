@@ -13,7 +13,6 @@
 #include <iomanip>
 #include <cmath>
 #include <vector>
-#include <omp.h>
 
 //using namespace std;
 
@@ -163,44 +162,43 @@ int main(int argc, char *argv[])
 
     unsigned short *tempSubnet;
     unsigned short *tempBroadcast;
-    switch(addressClass){ //can make temp subent array just size 3, use const 10 or address value or addr[0] in the middle of optimizing
+    switch(addressClass){ //can make temp subent array just size 3, use const 10 or address value or addr[0]
         case 'A':
-            tempSubnet = new unsigned short[3];
-            //tempSubnet[0] = 10;
-            tempSubnet[0] = 0;
+            tempSubnet = new unsigned short[4];
+            tempSubnet[0] = 10;
             tempSubnet[1] = 0;
             tempSubnet[2] = 0;
-            tempBroadcast = new unsigned short[3];
-            //tempBroadcast[0] = 10;
-            tempBroadcast[0] = 0;
+            tempSubnet[3] = 0;
+            tempBroadcast = new unsigned short[4];
+            tempBroadcast[0] = 10;
             tempBroadcast[1] = 0;
-            tempBroadcast[octet-1] = blockSize-1;
+            tempBroadcast[2] = 0;
+            tempBroadcast[octet] = blockSize-1;
             if (octet<3){
-                tempBroadcast[octet] = 255;
+                tempBroadcast[octet+1] = 255;
                 if (octet==1){
-                    tempBroadcast[octet+1] = 255;
+                    tempBroadcast[octet+2] = 255;
                 }
             }
-            subnets.push_back("10."    + std::to_string(tempSubnet[0])    + '.' + std::to_string(tempSubnet[1])    + '.' + std::to_string(tempSubnet[2]));
-            broadcasts.push_back("10." + std::to_string(tempBroadcast[0]) + '.' + std::to_string(tempBroadcast[1]) + '.' + std::to_string(tempBroadcast[2]));
-            firsts.push_back("10."     + std::to_string(tempSubnet[0])    + '.' + std::to_string(tempSubnet[1])    + '.' + std::to_string(tempSubnet[2] + 1));
-            lasts.push_back("10."      + std::to_string(tempBroadcast[0]) + '.' + std::to_string(tempBroadcast[1]) + '.' + std::to_string(tempBroadcast[2] - 1));
-#pragma omp parallel for num_threads(2)
+            subnets.push_back(std::to_string(tempSubnet[0])       + '.' + std::to_string(tempSubnet[1])    + '.' + std::to_string(tempSubnet[2])    + '.' + std::to_string(tempSubnet[3]));
+            broadcasts.push_back(std::to_string(tempBroadcast[0]) + '.' + std::to_string(tempBroadcast[1]) + '.' + std::to_string(tempBroadcast[2]) + '.' + std::to_string(tempBroadcast[3]));
+            firsts.push_back(std::to_string(tempSubnet[0])        + '.' + std::to_string(tempSubnet[1])    + '.' + std::to_string(tempSubnet[2])    + '.' + std::to_string(tempSubnet[3] + 1));
+            lasts.push_back(std::to_string(tempBroadcast[0])      + '.' + std::to_string(tempBroadcast[1]) + '.' + std::to_string(tempBroadcast[2]) + '.' + std::to_string(tempBroadcast[3] - 1));
             for (int i = 1; i < tableSize; i++){   
                 tempSubnet[octet] += blockSize;
                 
-                if (tempSubnet[octet-1] == 256){
-                    tempSubnet[octet-1] = 0;
-                    tempSubnet[octet-2]++;
-                    tempBroadcast[octet-1] = blockSize-1;
-                    tempBroadcast[octet-2]++;
+                if (tempSubnet[octet] == 256){
+                    tempSubnet[octet] = 0;
+                    tempSubnet[octet-1]++;
+                    tempBroadcast[octet] = blockSize-1;
+                    tempBroadcast[octet-1]++;
                 } else {
-                    tempBroadcast[octet-1] += blockSize;
+                    tempBroadcast[octet] += blockSize;
                 }
-                subnets.push_back("10." + std::to_string(tempSubnet[0])       + '.' + std::to_string(tempSubnet[1])    + '.' + std::to_string(tempSubnet[2]));
-                broadcasts.push_back("10." + std::to_string(tempBroadcast[0]) + '.' + std::to_string(tempBroadcast[1]) + '.' + std::to_string(tempBroadcast[2]));
-                firsts.push_back("10." + std::to_string(tempSubnet[0])        + '.' + std::to_string(tempSubnet[1])    + '.' + std::to_string(tempSubnet[2] + 1));
-                lasts.push_back("10." + std::to_string(tempBroadcast[0])      + '.' + std::to_string(tempBroadcast[1]) + '.' + std::to_string(tempBroadcast[2] - 1));
+                subnets.push_back(std::to_string(tempSubnet[0])       + '.' + std::to_string(tempSubnet[1])    + '.' + std::to_string(tempSubnet[2])    + '.' + std::to_string(tempSubnet[3]));
+                broadcasts.push_back(std::to_string(tempBroadcast[0]) + '.' + std::to_string(tempBroadcast[1]) + '.' + std::to_string(tempBroadcast[2]) + '.' + std::to_string(tempBroadcast[3]));
+                firsts.push_back(std::to_string(tempSubnet[0])        + '.' + std::to_string(tempSubnet[1])    + '.' + std::to_string(tempSubnet[2])    + '.' + std::to_string(tempSubnet[3]+1));
+                lasts.push_back(std::to_string(tempBroadcast[0])      + '.' + std::to_string(tempBroadcast[1]) + '.' + std::to_string(tempBroadcast[2]) + '.' + std::to_string(tempBroadcast[3]-1));
             }
             break;
         case 'B':
@@ -220,7 +218,7 @@ int main(int argc, char *argv[])
             broadcasts.push_back(std::to_string(address[0]) + '.' + std::to_string(address[1]) + '.' + std::to_string(tempBroadcast[0]) + '.' + std::to_string(tempBroadcast[1]));
             firsts.push_back(std::to_string(address[0])     + '.' + std::to_string(address[1]) + '.' + std::to_string(tempSubnet[0]) + '.' + std::to_string(tempSubnet[1] + 1));
             lasts.push_back(std::to_string(address[0])      + '.' + std::to_string(address[1]) + '.' + std::to_string(tempBroadcast[0]) + '.' + std::to_string(tempBroadcast[1] - 1));
-#pragma omp parallel for num_threads(2)
+
             for (int i = 1; i < tableSize; i++){
                 
                 if(octet == 2){
@@ -252,7 +250,6 @@ int main(int argc, char *argv[])
             broadcasts.push_back(std::to_string(address[0]) + '.' + std::to_string(address[1]) + '.' + std::to_string(address[2]) + '.' + std::to_string(tempBroadcast[0]));
             firsts.push_back(std::to_string(address[0])     + '.' + std::to_string(address[1]) + '.' + std::to_string(address[2]) + '.' + std::to_string(tempSubnet[0] + 1));
             lasts.push_back(std::to_string(address[0])      + '.' + std::to_string(address[1]) + '.' + std::to_string(address[2]) + '.' + std::to_string(tempBroadcast[0] - 1));
-#pragma omp parallel for num_threads(2)
             for(int i = 1 ; i < tableSize; i++){
                 tempSubnet[0] += blockSize;
                 tempBroadcast[0] += blockSize;
