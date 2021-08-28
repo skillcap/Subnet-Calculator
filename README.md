@@ -1,8 +1,8 @@
 Subnet Calculator Documentation -- 7/13/2020
 
 Compilation: 
-You must have have gcc or clang installed with support for c++ 11 or newer
-you may compile with gcc using "g++ -o scalc.exe SubnetCalc.cpp"
+You must have have gcc or clang installed with support for c++ 11 or newer.
+You may compile with gcc using "g++ -o scalc.exe SubnetCalc.cpp".
 This will create scalc.exe
 
 Usage:
